@@ -43,8 +43,8 @@ while True:
     plt.pause(0.001)  # Pause to update the plot
 
     # Exit the loop if 'q' is pressed
-    # if cv2.waitKey(1) & 0xFF == ord('q'):
-    #     break
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
 # Release the video capture object
 cap.release()

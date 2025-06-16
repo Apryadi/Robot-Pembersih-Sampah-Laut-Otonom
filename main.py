@@ -1,51 +1,48 @@
 import cv2
 from ultralytics import YOLO
-import matplotlib.pyplot as plt
+
+# Load YOLOv8 model
+model = YOLO("D:\RPSLO object detection\Robot-Pembersih-Sampah-Laut-Otonom/botolyolov10.pt")
 
 
-
-# Load the YOLOv10 model
-model = YOLO('C:/Users/Lenovo/Downloads/yolo-cam/Project-RPSLO/roda.py/botolyolov10.pt')
-model.to('cuda')
-# Open the video capture device (e.g. a webcam)
-cap = cv2.VideoCapture(0)
-
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)  # atau nilai lain yang lebih rendah
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)  # atau nilai lain yang lebih rendah
-
-
-# Check if the webcam is opened correctly
-if not cap.isOpened():
-    print("Error: Could not open webcam.")
-    exit()
-
-# Loop through the video frames
-while True:
-    # Read a frame from the video
-    ret, frame = cap.read()
-
-    # Check if frame was read successfully
-    if not ret:
-        print("Error: Could not read frame.")
-        break
-
-    # Run YOLOv10 inference on the frame
+def detect_objects(frame):
     results = model(frame)
+    detected_objects = []
 
-    # Visualize the results on the frame
-    annotated_frame = results[0].plot()
+    for r in results:
+        for box in r.boxes:
+            class_id = int(box.cls[0])  # Get class ID
+            confidence = box.conf[0].item()  # Confidence score
 
-    # Convert BGR to RGB for displaying in matplotlib
-    annotated_frame_rgb = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB)
+            if confidence > 0.5:
+                label = model.names[class_id]
+                detected_objects.append(label)
 
-    # Display the annotated frame using matplotlib
-    plt.imshow(annotated_frame_rgb)
-    plt.pause(0.001)  # Pause to update the plot
+                # Draw bounding box
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
-    # Exit the loop if 'q' is pressed
-    # if cv2.waitKey(1) & 0xFF == ord('q'):
-    #     break
+    return frame, detected_objects
 
-# Release the video capture object
-cap.release()
-plt.close()
+
+def main():
+    cap = cv2.VideoCapture(0)  
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        frame, detected_objects = detect_objects(frame)
+        cv2.imshow("AI Vision", frame)
+        if detected_objects:
+            print("Detected objects:", detected_objects)
+        key = cv2.waitKey(1) & 0xFF
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    main()
