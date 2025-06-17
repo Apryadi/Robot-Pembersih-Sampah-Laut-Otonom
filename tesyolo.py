@@ -2,7 +2,7 @@ import cv2
 from ultralytics import YOLO
 
 # Load the YOLOv8 model
-model = YOLO('path/to/your/yolov8s.pt')
+model = YOLO('D:/RPSLO object detection/Robot-Pembersih-Sampah-Laut-Otonom/ModelYolo/yolov8n.pt')
 
 # Open the video capture device (e.g. a webcam)
 cap = cv2.VideoCapture(0)
